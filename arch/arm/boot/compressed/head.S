@@ -11,16 +11,13 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 #include <asm/v7m.h>
-/* 
- * cspark, 
- * Date : 0150905
- * 
-   º¯¼ö°¡ V7ÀÌ¸é M CLASS ¾Æ´Ï¸é AR CLASS
-    a : application - cpu
-    m : micro controller cpu
-    r : realtime -cpu
 
-    target architecture ¸¦ ¼³Á¤ÇÏ´Â ÄÚµå·Î º¸¿©Áü.
+/* 
+ * Group : iamroot12D 
+ * Date  : 2015-09-07
+ * ID    : cspark
+ * Comment :
+ 	depends on cpu version. if v7, then m class.
  */
 
  AR_CLASS(	.arch	 armv7-a	)
@@ -38,28 +35,19 @@
 
 #if defined(CONFIG_DEBUG_ICEDCC)
 
+
 /* 
- * cspark, 
- * Date : 0150905
- *
-    ¾ÆÅ°ÅØ¿¡ ´Ù¸¥ ÄÚµå.
-
-    loadsp rb, tmp  - ÀÌ°Ç ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â°Å °°Àºµ¥ 
-
-    writeb coprocess 14¹ø ¼³Á¤ - ÇÏ´Âå°Å? 
-
-    cpu¸¦ µ½´Â chip, ºÎµ¿¼Ò¼öÁ¡ µîµîÀ» Ã³¸®ÇØÁà.
-   arm Ã¥ ÇÑ¹ø ºÁº¸ÀÚ.
-
-*********************************************
-mrc - > coprocess ¿¡¼­ chipÀ¸·Î ÀÐ¾î¿Í
-mcr - > chip ¿¡¼­ coprocess·Î ¼¼ÆÃÇØ.
-
-*********************************************
-   mcr	p14, 0, \ch, c0, , 0 -> coprocessor 14 ¹ø¿¡ ch¸¦ c5·¹Áö½ºÅÍ¿¡ ³Ö¾î¶ó.
-   ±×·¯å´Ï±î coprocessor 14c5¹ø¿¡ c5 ·¹Áö½ºÅÍ°¡ uart ¿ªÇÒÀ» ´ë½Å ÇØÁÖ³ªº¸±¸³ª..
-   jtag¿¡¼­ µð¹ö±ëÀ» ÇÏ±âÀ§ÇØ¼­ cp14¹ø¿¡ ¼¼ÆÃÀ» ÇÑ´Ùå³×? - ÀÎÅÍ³Ý¿¡¼­ Ã£¾Æº¸ÀÚ. 
+ * Group : iamroot12D 
+ * Date  : 2015-09-07
+ * ID    : cspark
+ * Comment :
+ 	Macro For debugging. 
+1. 	
+ 	mcr	p14, 0, \ch, c0, c5, 0 : Send char to Coprocessor 14 . For hardware debugger, T32.
+ 	mcr -> From Coprocessor to Chip
+ 	mrc -> From Chip to Coprocessor
  */
+ 
 
 
 #if defined(CONFIG_CPU_V6) || defined(CONFIG_CPU_V6K) || defined(CONFIG_CPU_V7)
@@ -85,14 +73,17 @@ mcr - > chip ¿¡¼­ coprocess·Î ¼¼ÆÃÇØ.
 #else
 
 /* 
- * cspark, 
- * Date : 0150905
- *
- rs-232 Áö¿ø ÇÏ³ªºÁ.
- loadsp µµ Áö¿øÀ» ÇÏ³×. load serial port.
- µð¹ö±×¸¦ À§ÇÑ ¼¼ÆÃµé.
- senduart ¸ÅÅ©·Î¸¦ Ã£¾Æº¸¸é assemÀ¸·Î code°¡ ³ª¿ÍÀÌ¼­
+ * Group : iamroot12D 
+ * Date  : 2015-09-07
+ * ID    : cspark
+ * Comment :
+ 	supported rs-232.
+	loadsp -> load serial port.
+	settings for debugging.
+
+	0x80000000 : strong arm uart0 - port
  */
+ 
 
 
 #include CONFIG_DEBUG_LL_INCLUDE
@@ -117,13 +108,16 @@ mcr - > chip ¿¡¼­ coprocess·Î ¼¼ÆÃÇØ.
 #endif
 #endif
 #endif
+
 /* 
- * cspark, 
- * Date : 0150905
- * mov	r0, \val , r0°¡ ¸Å°³º¯¼ö ·¹Áö½ºÅÍ¿¡ µ¥ÀÌÅÍ¸¦ ³Ö¾îÁÖ°í putc¸¦ È£Ãâ.
-    bl : ¸µÅ©·¹Áö½ºÅÍ¿¡ ´ÙÀ½ ÁÖ¼Ò¸¦ ³ÖÀº ÈÄ ºÐ±â. ±×·¯¸é ¼­ºêÇÔ¼ö ½ÇÇà ÀÌÈÄ µ¹¾Æ¿È.
-    putc ºÐ¼®ÇØºÁ.
+ * Group : iamroot12D 
+ * Date  : 2015-09-07
+ * ID    : cspark
+ * Comment :
+ 	the reason put val on r0 that basically it is using code with puts().
+ 	bl command is setting pc+1 on r14, lr for back.
  */
+ 
 
 		.macro	kputc,val
 		mov	r0, \val
@@ -1311,32 +1305,37 @@ __armv3_mpu_cache_flush:
  * Various debugging routines for printing hex characters and
  * memory, which again must be relocatable.
  */
+ 
+/* 
+ * Group : iamroot12D 
+ * Date  : 2015-09-07
+ * ID    : cspark
+ * Comment :
+	r0, value
+	r1, length
+
+	.align	2 ¸¦ ÇÏ´Â ÀÌÀ¯´Â ¹«¾ù¹¹Áö. ( 2^2, 4byte ???), ÀÏ´Ü 1,2,4 ¼³Á¤ °¡´É.
+	.space : ¿¡¾ÇµÈ °ø°£. 12byte.
+	short phexbuf[12];
+	int size = &phexbuf[11] - &phexbuf[0] ??
+
+	phexbuf,#object -> ÇØ´ç ¿ÀºêÁ§Æ®ÀÇ ÁÖ¼Ò¸¦ ´ã¾Æ.
+
+
+	strb	r2, [r3, r1] ->r2 = r3 = r3+r1 ???
+ */
 #ifdef DEBUG
 		.align	2
 		.type	phexbuf,#object
-phexbuf:	.space	12
+phexbuf:	
+		.space	12
 		.size	phexbuf, . - phexbuf
-/* 
- * cspark, 
- * Date : 0150905
- *
- r0, value
- r1, length
 
- .align	2 ¸¦ ÇÏ´Â ÀÌÀ¯´Â ¹«¾ù¹¹Áö. ( 2^2, 4byte ???), ÀÏ´Ü 1,2,4 ¼³Á¤ °¡´É.
- .space : ¿¡¾ÇµÈ °ø°£. 12byte.
- short phexbuf[12];
- int size = &phexbuf[11] - &phexbuf[0] ??
 
- phexbuf,#object -> ÇØ´ç ¿ÀºêÁ§Æ®ÀÇ ÁÖ¼Ò¸¦ ´ã¾Æ.
-
- 
- strb	r2, [r3, r1] ->r2 = r3 = r3+r1 ???
- 
- */
 
 @ phex corrupts {r0, r1, r2, r3}
-phex:		adr	r3, phexbuf
+phex:		
+		adr	r3, phexbuf
 		mov	r2, #0
 		strb	r2, [r3, r1]
 1:		subs	r1, r1, #1
@@ -1349,28 +1348,29 @@ phex:		adr	r3, phexbuf
 		add	r2, r2, #'0'
 		strb	r2, [r3, r1]
 		b	1b
+
 /* 
- * cspark, 
- * Date : 0150905
- *
- subs	r1, r1, #1
- 0x00020000 À» ÇÏ³ª½Ä Á¦°ÅÇØ¼­ 0ÀÌ µÉ åå¶§±îÁö delay ÄÚµå·Î º¸¿©Áø´Ù.
-
- teq(xor À» ÀÌ¿ëÇÑ ºñ±³ ¸í·É), n °ú z flag ¸¦ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
-
-teq	r2, #'\n'  - °°À¸¸é z flag¸¦ 0À¸·Î 
-
-moveq	r2, #'\r'
-
-ÀÌ°Ô ¼¼Æ® ÀÎ°¡ºÁ ? 
-
-teq	r0, #0 NULL Ã¼Å© ÇÏ´Â ºÎºÐ.
-
-ldrb	r2, [r0], #1  r0´Â Æ÷ÀÎÅÍ.
-
-mov	pc, lr - pc¿¡ µ¹¾Æ°¥ Àå¼Ò¸¦ ³Ö¾îÁÜ.
+ * Group : iamroot12D 
+ * Date  : 2015-09-07
+ * ID    : cspark
+ * Comment :
  
+ 1. delay code.( Using uart serial, needed delay depends on baud rate. )
+ 
+	mov	r1, #0x00020000
+	subs	r1, r1, #1
+	bne	3b
+	
+2. substitute '\n' -> '\r'
+
+	teq	r2, #'\n'
+	moveq	r2, #'\r'
+
+3. loop ( if r0 is NULL, then finish. )
+
+	teq	r0, #0
  */
+ 
 
 @ puts corrupts {r0, r1, r2, r3}
 puts:		loadsp	r3, r1
@@ -1389,11 +1389,14 @@ puts:		loadsp	r3, r1
 		mov	pc, lr
 
 /* 
- * cspark, 
- * Date : 0150905
- *
-   mov	r2, r0 : data¸¦ r2·Î
-   loadsp	r3, r1 : r3¿¡ ¹°¸®¸Þ¸ð¸® ¼³Á¤.
+ * Group : iamroot12D 
+ * Date  : 2015-09-08
+ * ID    : cspark
+ * Comment :
+ 1. insert null for puts()
+ 	mov	r0, #0
+ 2. set physical address on r3
+ 	loadsp	r3, r1
  */
 		
 @ putc corrupts {r0, r1, r2, r3}
