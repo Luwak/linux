@@ -168,6 +168,14 @@
 		bl	memdump		/* dump 256 bytes at start of kernel */
 #endif
 		.endm
+		
+/* 
+ * Group : iamroot12D 
+ * Date  : 2015-09-22
+ * ID    : cspark
+ * Comment :
+ 	The .section directive causes the assembler to begin assembling into the section given by segname
+ */
 
 		.section ".start", #alloc, #execinstr
 /*
@@ -180,6 +188,16 @@
 		 * classes.
 		 */
  AR_CLASS(	.arm	)
+
+/* 
+ * Group : iamroot12D 
+ * Date  : 2015-09-22
+ * ID    : cspark
+ * Comment :
+1. define start. not used. don't need.
+.type	start,#function
+ */
+ 
 start:
 		.type	start,#function
 		.rept	7
@@ -211,6 +229,27 @@ start:
 		 * FIQs/IRQs (numeric definitions from angel arm.h source).
 		 * We only do this if we were in user mode on entry.
 		 */
+/* 
+ * Group : iamroot12D 
+ * Date  : 2015-09-22
+ * ID    : cspark
+ * Comment :
+ 	1. if user mode, it means angel boot.
+		mrs	r2, cpsr		@ get current mode
+		tst	r2, #3			@ not user?
+		bne	not_angel 	
+
+	2. enter svc mode.
+		safe_svcmode_maskall r0
+
+	3. save r9(cpsr) to spsr_cxsf, spsr_cxsf is compiler macro.
+
+	   CPSR_c : 0~7 bit  Mode, ARM/Thumb, IRQ/FIQ Enable/Disable (Control Field) 
+	   CPSR_x : 8~15 bit Unused  (Extension Field) 
+	   CPSR_s : 16_23 bit Unused (Status Field) 
+	   CPSR_f : 24~31 bit NZCV flag (Flags Field) 	
+	
+ */
 		mrs	r2, cpsr		@ get current mode
 		tst	r2, #3			@ not user?
 		bne	not_angel
@@ -220,7 +259,7 @@ start:
 not_angel:
 		safe_svcmode_maskall r0
 		msr	spsr_cxsf, r9		@ Save the CPU boot mode in
-						@ SPSR
+								@ SPSR
 #endif
 		/*
 		 * Note that some cache flushing and other stuff may
@@ -232,6 +271,15 @@ not_angel:
 		 * by the linker here, but it should preserve r7, r8, and r9.
 		 */
 
+/* 
+ * Group : iamroot12D 
+ * Date  : 2015-09-22
+ * ID    : cspark
+ * Comment :
+
+1. real code area??
+	 .text and 'section .text' are the same.
+ */
 		.text
 
 #ifdef CONFIG_AUTO_ZRELADDR
